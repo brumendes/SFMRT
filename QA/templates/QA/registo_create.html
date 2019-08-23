@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+{% extends 'QA/base.html' %}
+{% load staticfiles %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item" aria-current="page"><a href="{% url 'QA:home' %}">Aceleradores</a></li>
+<li class="breadcrumb-item active" aria-current="page"><a href="{{ acelerador.get_absolute_url }}">{{ acelerador }}</a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">Novo QA</li>
+{% endblock %}
+
+{% block main_content %}
+<form action="" id="novoqaform" method="post">
+    {{ form.management_form }}
+    {{ formset.management_form }}
+    {% csrf_token %}
+    {{ form.acelerador }}
+
+    {% if form.errors %}
+    {% for field in form %}
+    {% for error in field.errors %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>{{ error|escape }}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>{{ error|escape }}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="card mt-3 shadow">
+        <div class="card-header">
+            <h3>Registo</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="acelerador" class="bmd-label-static">{{ form.acelerador.label_tag }}</label>
+                        <input type="text" class="form-control" id="acelerador" value="{{ acelerador }}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="data" class="bmd-label-static">{{ form.data.label_tag }}</label>
+                        {{ form.data }} 
+                    </div>                    
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="autor" class="bmd-label-static">{{ form.autor.label_tag }}</label>
+                        {{ form.autor }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3 shadow">
+        <div class="card-header">
+            <h3>Condições de medida</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Gantry (º)</th>
+                        <th scope="col">Colimador (º)</th>
+                        <th scope="col">DFP (cm)</th>
+                        <th scope="col">Campo (cm)</th>
+                        <th scope="col">Cone</th>
+                        <th scope="col">PMMA (mm)</th>
+                        <th scope="col">Dose (MU)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for c in condicoes %}
+                    <tr>
+                        <th scope="row">{{ c.tipo }}</th>
+                        <td>{{ c.gantry }}</td>
+                        <td>{{ c.colimador }}</td>
+                        <td>{{ c.dfp }}</td>
+                        <td>{{ c.campo }}</td>
+                        <td>{{ c.cone }}</td>
+                        <td>{{ c.pmma }}</td>
+                        <td>{{ c.dose }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-muted">
+            {% for c in condicoes %}<p>{{ c.notas }}</p>{% endfor %}
+        </div>
+    </div>
+
+    <div class="card mt-3 shadow">
+        <div class="card-header">
+            <h3>Referências</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">Energias</th>
+                        {% for r in refs %}
+                        <th scope="col">{{ r.energia }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">+2%</th>
+                        {% for r in refs %}
+                        <td><i>{{ r.get_tolerance_sup|floatformat:3 }}</i></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th></th>
+                        {% for r in refs %}
+                        <td><b>{{ r.valor|floatformat:3 }}</b></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th scope="row">-2%</th>
+                        {% for r in refs %}
+                        <td><i>{{ r.get_tolerance_inf|floatformat:3 }}</i></td>
+                        {% endfor %}
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3 shadow">
+        <div class="card-header">
+            <h3>Medidas</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for form in formset %}
+                {{ form.energia }}
+                {{ form.referencia }}
+                {{ form.registo }}
+                <div class="col">
+                    <fieldset class="form-group">
+                        <label for="form_id" class="bmd-label-static"><b>{{ form.valor.label_tag }}</b></label>
+                        {{ form.valor }}
+                    </fieldset>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3 shadow">
+        <div class="card-header">
+            <h3>Verificações mecânicas</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for v in verform %}
+                <div class="col">
+                    <fieldset class="form-group">
+                        <label for="form_id" class="bmd-label-static"><b>{{ v.label_tag }}</b></label>
+                        {{ v }}
+                    </fieldset>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="btn-group float-right" role="group" aria-label="Basic example">
+                <a role="button" class="btn btn-outline btn-secondary" href="{{ acelerador.get_absolute_url }}">Cancelar</a>
+                <button type="reset" class="btn btn-outline btn-secondary">Apagar todos</button>
+                <button type="submit" class="btn btn-outline btn-primary">Submeter</button>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+{% endblock %}

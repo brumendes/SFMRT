@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+{% extends 'QA/base.html' %}
+{% load staticfiles %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item" aria-current="page"><a href="{% url 'QA:home' %}">Aceleradores</a></li>
+<li class="breadcrumb-item" aria-current="page"><a href="{{ acelerador.get_absolute_url }}">{{ acelerador.slug }}</a></li>
+<li class="breadcrumb-item active" aria-current="page">Registos</li>
+{% endblock %}
+
+{% block main_content %}
+<div class="card mt-3 shadow">
+    <div class="card-header text-center">
+        <h3>Registos</h3>
+    </div>
+    <div class="card-body">
+        <div class="btn-group shadow" role="group" aria-label="Basic example">
+            <a role="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#dataFilter">
+                <i class="fas fa-filter"></i> Filtrar
+            </a>
+        </div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Autor</th>
+                    <th>Notas</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if object_list %}
+                {% for r in object_list %}
+                <tr>
+                    <td>{{ r.data }}</td>
+                    <td>{{ r.autor }}</td>
+                    <td>
+                        {% for m in r.medidas.all %}
+                        {% with m.analyse as r %}
+                        {% ifequal r 'fail' %}
+                        {{ m.energia }}<i class="fas fa-ban" style="color: red;"></i>&emsp;
+                        {% endifequal %}
+                        {% ifequal r 'warning' %}
+                        {{ m.energia }}<i class="fas fa-exclamation-triangle" style="color: orange;"></i>&emsp;
+                        {% endifequal %}
+                        {% endwith %}
+                        {% endfor %}
+                    <td>
+                        <a href="{% url 'QA:registo_detail' acelerador.slug r.id %}">
+                            <i class="fas fa-file-alt" data-toggle="tooltip" data-placement="top" title="Ver medidas"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="3">Sem registos.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        {% if is_paginated %}
+        <nav class="">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="/{{ acelerador }}/Registos/?page={{ page_obj.previous_page_number }}">anterior</a>
+                </li>
+                {% endif %}
+                {% for i in page_obj.paginator.page_range %}
+                {% if page_obj.number == i %}
+                <li class="page-item active"><a class="page-link">{{ i }} <span
+                        class="sr-only">(current)</span></a>
+                </li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="/{{ acelerador }}/Registos/?page={{ page_obj.next_page_number }}">próximo</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="dataFilter" tabindex="-1" role="dialog" aria-labelledby="dataFilterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-lg">
+        <form method="get" action="">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Filtro</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Seleccione o intervalo a visualizar</p>
+                    <div class="form-group mb-2 mr-sm-3">
+                        <label for="initial_date" class="bmd-label-floating">De:</label>
+                         <input type="date" class="form-control" placeholder="Ano" value="{{ initial_date }}" name="initial_date"/>
+                    </div>
+                    <div class="form-group mb-2 mr-sm-3">
+                        <label for="final_date" class="bmd-label-floating">Até:</label>
+                        <input type="date" class="form-control" placeholder="Ano" value="{{ final_date }}" name="final_date">
+                        <input type="hidden" value="{{ energia.id }}" name="energia">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-primary btn-block" type="submit">Filtrar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

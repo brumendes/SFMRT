@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>SFMRT</title>
+    <link rel="icon" href="{%static 'QA/images/ipo-small-logo.png' %}">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css"
+          integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
+    
+    <link rel="stylesheet" href="{%static 'QA/css/base.css' %}">
+</head>
+<body>
+
+<!--Navbar-->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+    <a class="navbar-brand">
+        <img src="{%static 'QA/images/ipo-logo.png' %}" height="30" class="d-inline-block align-top" alt="">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-logo text-uppercase ml-auto text-white">Controlo Diário da Taxa de Dose</div>
+        <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+            <span class="navbar-text mr-3">
+                Bem vindo, {{ request.user }}
+            </span>
+            <a  role="button" class="btn btn-outline-light" href="/accounts/logout/">
+                Terminar sessão
+            </a>
+        </ul>
+    </div>
+</nav>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb shadow">
+        {% block breadcrumb %}
+        {% endblock %}
+    </ol>
+</nav>
+
+<div class="container mb-3">
+    {% if messages %}
+    {% for message in messages %}
+    <div {% if message.tags %} class="alert alert-{{ message.tags }} alert-dismissible" {% endif %} role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <strong>{{ message }}</strong>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% block main_content %}
+    {% endblock %}
+</div>
+
+<!--Javascript Libs-->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+<script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
+
+<script>
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+$('.alert').alert()
+
+
+</script>
+{% block js %}
+{% endblock %}
+</body>
+</html>

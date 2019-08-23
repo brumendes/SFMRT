@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+{% extends 'QA/base.html' %}
+<html lang="pt">
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Aceleradores</li>
+{% endblock %}
+
+{% block main_content %}
+<div class="row">
+    {% for acelerador in object_list %}
+    <div class="col-sm-3 mt-3">
+        <div class="card shadow">
+            {% if acelerador.imagem %}
+            <img class="card-img-top" src="{{ acelerador.imagem.url }}" alt="Card image cap">
+            {% endif %}
+            <div class="card-body">
+                <a href="{{ acelerador.get_absolute_url }}" class="btn btn-outline-secondary btn-block active" role="button">{{ acelerador }}</a>
+            </div>
+            <div class="card-footer text-muted">
+                Último registo: <cite title="Source Title">{{ acelerador.get_latest_registo.data }}</cite>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+</html>

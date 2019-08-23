@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+{% extends 'QA/base.html' %}
+{% load staticfiles %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item" aria-current="page"><a href="{% url 'QA:home' %}">Aceleradores</a></li>
+<li class="breadcrumb-item active" aria-current="page">{{ acelerador.slug }}</li>
+{% endblock %}
+
+{% block main_content %}
+
+{% if not load_qa == None %}
+<a role="button" class="btn btn-outline-success btn-lg active btn-block" href="{% url 'QA:qa_create' acelerador.slug %}">Novo QA</a>
+{% endif %}
+
+<div class="card mt-3 shadow">
+    <div class="card-header text-center">
+        <h3>Energia: {{ energia }}
+            <a role="button" class="btn btn-outline-primary float-right" data-toggle="modal" data-target="#energyFilter">Alterar</a>
+        </h3>
+    </div>
+    <div class="card-body">
+        <h5>
+            <b>Referência: </b>
+            {% if ref %}
+            {{ ref.valor }} a {{ ref.data }}
+            {% else %}
+            </b>Não estabelecida para esta energia neste acelerador!</p>
+            {% endif %}
+        </h5>
+        <div class="btn-group shadow" role="group" aria-label="Basic example">
+            {% if object_list %}
+            <a role="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#dataFilter">
+                <i class="fas fa-filter"></i> 
+                    Filtrar
+                </a>
+            <a role="button" class="btn btn-outline-secondary" href="{% url 'QA:export_to_excel' acelerador.slug energia.id initial_date final_date %}">
+                <i class="fas fa-file-excel"></i> 
+                    Exportar
+            </a>
+            {% endif %}
+            <a role="button" href="{% url 'QA:ref_create_modal' acelerador.slug energia.slug %}" class="btn btn-outline-success" data-toggle="modal" data-target="#exampleModalCenter">
+                <i class="fas fa-plus"></i>
+                    Nova referência
+            </a>
+        </div>
+    
+        {% if object_list|length > 1 %}
+        <div id="chart_div"></div>
+        {% else %}
+        <div class="alert alert-warning text-center" role="alert">
+            <b>Sem dados suficientes para representação gráfica! Consulte os registos.</hb>
+        </div>
+        {% endif %}
+
+        <p><b>De: </b>{{ initial_date }} <b>Até: </b>{{ final_date }}</p>
+    </div>
+    <div class="card-footer">
+        <a role="button" class="btn btn-outline-secondary float-right" href="{% url 'QA:registos_list' acelerador.slug %}">
+            <i class="fas fa-file-alt"></i> 
+            Consultar Registos
+        </a>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    {% if perms.QA.add_referencia %}
+    {% include "QA/ref_create_modal.html" %}
+    {% else %}
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Não permitido</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Não tem permissões para adicionar referências!</p>
+                <p>Contacte o Serviço de Física Médica.</p>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="energyFilter" tabindex="-1" role="dialog" aria-labelledby="energyFilterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="get" action="">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Energias</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Seleccione a energia pretendida</p>
+                    {% for e in acelerador.energias.all %}
+                        <label class="radio-inline">
+                            <input type="radio" name="energia" id="{{ e.id }}" value="{{ e.slug }}" {% if e == energia %} checked {% endif %}>{{ e }}
+                        </label>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-primary btn-block" type="submit">Carregar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="dataFilter" tabindex="-1" role="dialog" aria-labelledby="dataFilterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="get" action="">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Filtro</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Seleccione o intervalo a visualizar</p>
+                    <div class="form-group mb-2 mr-sm-3">
+                        <label for="initial_date" class="bmd-label-floating">De:</label>
+                        <input type="date" class="form-control" placeholder="Ano" value="{{ initial_date }}" name="initial_date"/>
+                    </div>
+                    <div class="form-group mb-2 mr-sm-3">
+                        <label for="final_date" class="bmd-label-floating">Até:</label>
+                        <input type="date" class="form-control" placeholder="Ano" value="{{ final_date }}" name="final_date">
+                        <input type="hidden" value="{{ energia }}" name="energia">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-primary btn-block" type="submit">Filtrar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">var medidas = {{ object_list|safe }};</script>
+<script type="text/javascript" src="{%static 'QA/js/charts.js' %}"></script>
+{% endblock %}

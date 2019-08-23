@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+{% extends 'QA/base.html' %}
+{% load staticfiles %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item" aria-current="page"><a href="{% url 'QA:home' %}">Aceleradores</a></li>
+<li class="breadcrumb-item" aria-current="page">
+    <a href="{{ object.acelerador.get_absolute_url }}">{{ object.acelerador }}</a>
+</li>
+<li class="breadcrumb-item" aria-current="page"><a href="{% url 'QA:registos_list' object.acelerador %}">Registos</a></li>
+<li class="breadcrumb-item active" aria-current="page">{{ object }}</li>
+{% endblock %}
+
+{% block main_content %}
+{% with object.medidas.all as medidas %}
+
+<div class="btn-group shadow" role="group" aria-label="Basic example">
+    <a role="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="PDF"
+       href="{% url 'QA:export_to_pdf' object.id %}">
+        <i class="fas fa-file-pdf"></i>
+    </a>
+    <a role="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="Imprimir"
+       href="javascript:window.print()">
+        <i class="fas fa-print"></i>
+    </a>
+</div>
+
+<div class="card mt-3 shadow">
+    <div class="card-header">
+        Registo
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col">
+                <label for="acelerador">Acelerador:</label>
+                <input type="text" readonly class="form-control-plaintext" id="acelerador"
+                       value="{{ object.acelerador }}">
+            </div>
+            <div class="col">
+                <label for="data_qa">Data:</label>
+                <input type="text" readonly class="form-control-plaintext" id="data_qa" value="{{ object.data }}">
+            </div>
+            <div class="col">
+                <label for="autor">Realizado por:</label>
+                <input type="text" readonly class="form-control-plaintext" id="autor" value="{{ object.autor }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3 shadow">
+    <div class="card-header">
+        Condições de medida
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Gantry (º)</th>
+                    <th scope="col">Colimador (º)</th>
+                    <th scope="col">DFP (cm)</th>
+                    <th scope="col">Campo (cm)</th>
+                    <th scope="col">Cone</th>
+                    <th scope="col">PMMA (mm)</th>
+                    <th scope="col">Dose (MU)</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for c in condicoes %}
+                <tr>
+                    <th scope="row">{{ c.tipo }}</th>
+                    <td>{{ c.gantry }}</td>
+                    <td>{{ c.colimador }}</td>
+                    <td>{{ c.dfp }}</td>
+                    <td>{{ c.campo }}</td>
+                    <td>{{ c.cone }}</td>
+                    <td>{{ c.pmma }}</td>
+                    <td>{{ c.dose }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer text-muted">
+        {% for c in condicoes %}
+        <p>{{ c.notas }}</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card mt-3 shadow">
+    <div class="card-header">
+        Referências
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                {% regroup medidas by referencia as referencias %}
+                <thead>
+                <tr>
+                    <th scope="col"></th>
+                    {% for r in referencias %}
+                    <th scope="col">{{ r.grouper.energia }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th scope="row">+2%</th>
+                    {% for r in referencias %}
+                    <td><i>{{ r.grouper.get_tolerance_sup|floatformat:3 }}</i></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th></th>
+                    {% for r in referencias %}
+                    <td><b>{{ r.grouper.valor|floatformat:3 }}</b></td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">-2%</th>
+                    {% for r in referencias %}
+                    <td><i>{{ r.grouper.get_tolerance_inf|floatformat:3 }}</i></td>
+                    {% endfor %}
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3 shadow">
+    <div class="card-header">
+        Medidas
+    </div>
+    <div class="card-body">
+        <div class="form-row">
+            {% for m in medidas %}
+            <div class="col">
+                <label for="{{ m.valor.id }}">{{ m.energia }}:</label>
+                {% with m.analyse as r %}
+                {% ifequal r 'fail' %}
+                <i class="fas fa-ban" style="color: red;"></i>
+                {% endifequal %}
+                {% ifequal r 'warning' %}
+                <i class="fas fa-exclamation-triangle" style="color: orange;"></i>
+                {% endifequal %}
+                {% endwith %}
+                <input type="text" readonly class="form-control" id="{{ m.valor.id }}" value="{{ m.valor }}">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3 shadow">
+    <div class="card-header">
+        Verificações mecânicas
+    </div>
+    <div class="card-body">
+        <div class="form-row">
+            {% with object.verificacao.all as verificacoes %}
+            {% for v in verificacoes %}
+            <div class="col">
+                <label for="{{ v.dfp.id }}">DFP:</label>
+                <input type="text" readonly class="form-control" id="{{ v.dfp.id }}" value="{{ v.dfp }}">
+            </div>
+            <div class="col">
+                <label for="{{ v.lasers.id }}">Lasers:</label>
+                <input type="text" readonly class="form-control" id="{{ v.lasers.id }}" value="{{ v.lasers }}">
+            </div>
+            <div class="col">
+                <label for="{{ v.campo.id }}">Campo:</label>
+                <input type="text" readonly class="form-control" id="{{ v.campo.id }}" value="{{ v.campo }}">
+            </div>
+            {% endfor %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+{% endwith %}
+{% endblock %}
