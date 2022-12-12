@@ -71,9 +71,6 @@ class RegistoAdmin(admin.ModelAdmin):
     list_filter = ['acelerador']
     list_per_page = 15
 
-    class Media:
-        js = ('/static/QA/js/registo_admin.js',)
-
 
 admin.site.register(Fabricante)
 admin.site.register(Acelerador, AceleradorAdmin)
